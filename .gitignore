@@ -9,4 +9,5 @@ data/raw/stock/*.json
 data/raw/news/*.json
 data/exports/*.csv
 streamlit.log
-
+streamlit.out.log
+streamlit.err.log

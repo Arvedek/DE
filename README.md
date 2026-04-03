@@ -104,6 +104,8 @@ This is a strong course-project scale because it justifies layered storage, incr
 
 ## Setup
 
+For a teammate-friendly step-by-step run guide, use [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md).
+
 ### 1. Create a virtual environment
 
 ```powershell

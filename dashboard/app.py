@@ -343,7 +343,7 @@ with tab_overview:
             y="total_mentions",
             color="ticker",
             title="Daily social attention",
-            color_discrete_sequence=px.colors.qualitative.Earth,
+            color_discrete_sequence=px.colors.qualitative.Set2,
         )
         social_volume.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
