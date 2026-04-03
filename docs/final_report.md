@@ -339,3 +339,43 @@ The project can be reproduced directly from this repository because the raw file
 
 The detailed run instructions are available in [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md).
 
+## 16. Step-by-Step Execution Procedure
+
+To make the implementation sequence completely clear, the practical workflow can be summarized as follows.
+
+### Step 1. Clone or download the repository
+
+Each teammate starts by getting a local copy of the repository. Because the raw source files are already included, no extra data collection step is required.
+
+### Step 2. Create a Python environment
+
+After opening the project folder in PowerShell, the user creates a virtual environment and installs the required packages from `requirements.txt`.
+
+### Step 3. Check the source manifest
+
+The file `config/raw_sources.json` is used to confirm that the pipeline is pointing to the repository’s raw data folders. In the default project state, these paths already point to the committed raw files.
+
+### Step 4. Run the ETL pipeline
+
+The command `python run_pipeline.py` starts the full ETL process. During this stage, the stock CSV, StockTwits files, and Reddit workbooks are loaded into the `source_data` schema, transformed into `prepared_data`, and aggregated into `analytics`.
+
+### Step 5. Verify the warehouse outputs
+
+After the ETL finishes, the main output file is `warehouse/market_sentiment.duckdb`. The pipeline also writes CSV exports into `data/exports/`, which can be used in the report or for quick verification.
+
+### Step 6. Launch the final application
+
+The command `streamlit run dashboard/app.py` starts the dashboard. The application reads from the analytics tables and presents the final stock-price-versus-sentiment visualizations.
+
+### Step 7. Use the dashboard for analysis
+
+Inside the dashboard, the user can:
+
+- choose one or more tickers
+- compare stock price and daily sentiment over time
+- inspect sentiment versus next-day return
+- review correlation values by ticker
+- inspect top positive and negative posts from the underlying social data
+
+This final step connects the engineering pipeline back to the project’s main business questions.
+
