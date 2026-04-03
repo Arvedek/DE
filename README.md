@@ -1,6 +1,6 @@
 # MarketMood DE Project
 
-MarketMood is now configured around your collected raw data instead of sample APIs. The project treats your local stock price CSV, StockTwits workbooks, and Reddit monthly workbooks as the raw source layer, then builds a DuckDB `source_data -> prepared_data -> analytics` warehouse and a Streamlit app on top.
+MarketMood is now configured around your collected raw data instead of sample APIs. The repository now includes the stock price CSV, StockTwits workbooks, and Reddit monthly workbooks under `data/raw/source_files/`, then builds a DuckDB `source_data -> prepared_data -> analytics` warehouse and a Streamlit app on top.
 
 ## Project objective
 
@@ -12,11 +12,11 @@ Build a reproducible data engineering pipeline that answers:
 
 ## Raw sources used
 
-Configured in [config/raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json):
+Configured in [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json):
 
-- 15-minute stock bars CSV
-- 8 StockTwits ticker workbooks
-- 8 monthly Reddit workbooks with `Posts`, `Comments`, and `Summary` sheets
+- 15-minute stock bars CSV in `data/raw/source_files/stocks/`
+- 8 StockTwits ticker workbooks in `data/raw/source_files/stocktwits/`
+- 8 monthly Reddit workbooks with `Posts`, `Comments`, and `Summary` sheets in `data/raw/source_files/reddit/`
 
 ## Data model
 
@@ -81,7 +81,14 @@ This is a strong course-project scale because it justifies layered storage, incr
 |-- docs/
 |   |-- presentation_outline.md
 |   |-- project_design.md
-|   `-- raw_storage_design.md
+|   |-- raw_storage_design.md
+|   `-- team_run_guide.md
+|-- data/
+|   `-- raw/
+|       `-- source_files/
+|           |-- stocks/
+|           |-- stocktwits/
+|           `-- reddit/
 |-- sql/
 |   |-- analytics_daily_market_social.sql
 |   |-- analytics_daily_social_signals.sql
@@ -116,7 +123,7 @@ pip install -r requirements.txt
 
 ### 2. Check the raw source manifest
 
-Open [config/raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json) and confirm the file paths still match your machine.
+Open [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json) and confirm the relative paths still point to the in-repo raw files.
 
 ### 3. Run the pipeline
 
@@ -145,7 +152,7 @@ streamlit run dashboard/app.py
 
 ## Design choices
 
-- External raw files stay untouched so the collected data remains your system of record
+- Raw source files are versioned inside the repository under `data/raw/source_files/`
 - DuckDB acts as the analytical warehouse and refined storage
 - `source_data` tables preserve source-specific structure
 - `prepared_data` tables standardize schema and derive timestamps, tickers, and sentiment

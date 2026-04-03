@@ -10,8 +10,7 @@ Each teammate needs:
 
 - a local copy of the repository
 - Python 3.13 or newer
-- access to the raw data files
-- permission to read the raw data folders from their own machine
+- the raw data files included in this repository
 
 ## Project folder
 
@@ -81,13 +80,13 @@ Open:
 
 [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json)
 
-Update the paths so they match your machine.
+The default config already points to the raw files committed into this repository.
 
 The file should point to:
 
-- the stock CSV
-- the folder containing `*_posts.xlsx` StockTwits files
-- the folder containing `reddit_*.xlsx` Reddit workbooks
+- the stock CSV in `data/raw/source_files/stocks/`
+- the folder containing `*_posts.xlsx` StockTwits files in `data/raw/source_files/stocktwits/`
+- the folder containing `reddit_*.xlsx` Reddit workbooks in `data/raw/source_files/reddit/`
 
 Example structure:
 
@@ -215,4 +214,3 @@ cd "C:\Users\YOUR_NAME\Documents\New project"
 python run_pipeline.py
 streamlit run dashboard/app.py
 ```
-

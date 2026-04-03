@@ -1,7 +1,7 @@
 {
-  "stocks_csv": "C:\\Users\\dings\\OneDrive\\Documents\\WeChat Files\\Dsn96311\\FileStorage\\File\\2026-04\\stocks_250101-260319_15m_RAW.csv",
-  "stocktwits_dir": "C:\\Users\\dings\\OneDrive\\Documents\\WeChat Files\\Dsn96311\\FileStorage\\File\\2026-04\\stocktwistposts",
+  "stocks_csv": "data\\raw\\source_files\\stocks\\stocks_250101-260319_15m_RAW.csv",
+  "stocktwits_dir": "data\\raw\\source_files\\stocktwits",
   "stocktwits_pattern": "*_posts.xlsx",
-  "reddit_dir": "C:\\Users\\dings\\OneDrive\\Documents\\WeChat Files\\Dsn96311\\FileStorage\\File\\2026-04\\reddit_output2",
+  "reddit_dir": "data\\raw\\source_files\\reddit",
   "reddit_pattern": "reddit_*.xlsx"
 }
