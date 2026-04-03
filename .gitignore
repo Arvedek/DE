@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+.env
+warehouse/*.duckdb
+data/raw/stock/*.json
+data/raw/news/*.json
+data/exports/*.csv
+streamlit.log
+

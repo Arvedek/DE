@@ -1,0 +1,2 @@
+"""MarketMood pipeline package."""
+
