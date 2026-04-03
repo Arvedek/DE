@@ -20,6 +20,71 @@ The project then builds three layers in DuckDB:
 - `prepared_data` for cleaned and transformed tables
 - `analytics` for the final dashboard and reporting tables
 
+## System design at a glance
+
+```mermaid
+flowchart LR
+    A["Raw stock CSV"] --> B["source_data"]
+    C["StockTwits Excel files"] --> B
+    D["Reddit Excel files"] --> B
+    B --> E["prepared_data"]
+    E --> F["analytics"]
+    F --> G["Streamlit dashboard"]
+    F --> H["CSV exports"]
+```
+
+## ETL flow
+
+```mermaid
+flowchart TD
+    A["1. Read raw files"] --> B["2. Load raw tables in source_data"]
+    B --> C["3. Clean timestamps and text"]
+    C --> D["4. Score sentiment with VADER"]
+    D --> E["5. Map posts to tracked tickers"]
+    E --> F["6. Build prepared_data tables"]
+    F --> G["7. Aggregate daily analytics tables"]
+    G --> H["8. Serve dashboard and exports"]
+```
+
+## Schema overview
+
+```mermaid
+erDiagram
+    STOCK_PRICES_RAW ||--o{ STOCK_PRICES_15M : loads_into
+    STOCK_PRICES_15M ||--|| MARKET_DAILY_PRICES : aggregates_to
+    STOCKTWITS_POSTS_RAW ||--|| STOCKTWITS_POSTS : cleans_to
+    REDDIT_POSTS_RAW ||--|| REDDIT_POSTS : cleans_to
+    REDDIT_COMMENTS_RAW ||--|| REDDIT_COMMENTS : cleans_to
+    STOCKTWITS_POSTS ||--o{ SOCIAL_MENTIONS : contributes
+    REDDIT_POSTS ||--o{ SOCIAL_MENTIONS : contributes
+    REDDIT_COMMENTS ||--o{ SOCIAL_MENTIONS : optional_contribution
+    SOCIAL_MENTIONS ||--o{ DAILY_SOCIAL_SIGNALS : aggregates_to
+    MARKET_DAILY_PRICES ||--o{ DAILY_MARKET_SOCIAL : joins_to
+    DAILY_SOCIAL_SIGNALS ||--o{ DAILY_MARKET_SOCIAL : joins_to
+    DAILY_MARKET_SOCIAL ||--o{ TICKER_OVERVIEW : summarizes_to
+    SOCIAL_MENTIONS ||--o{ TOP_SOCIAL_POSTS : ranks_to
+```
+
+## Repository structure
+
+```mermaid
+flowchart TD
+    A["Repository root"] --> B["config/raw_sources.json"]
+    A --> C["data/raw/source_files"]
+    A --> D["src/market_sentiment_pipeline"]
+    A --> E["sql"]
+    A --> F["dashboard/app.py"]
+    A --> G["docs"]
+    D --> D1["ingest.py"]
+    D --> D2["warehouse.py"]
+    D --> D3["pipeline.py"]
+    E --> E1["prepared_market_daily_prices.sql"]
+    E --> E2["analytics_*"]
+    G --> G1["final_report.md"]
+    G --> G2["final_report_paper.docx"]
+    G --> G3["team_run_guide.md"]
+```
+
 ## What the project tries to answer
 
 - Do social discussions line up with stock price movement?
@@ -78,6 +143,20 @@ The final UI focuses on stock price versus sentiment. It includes:
 - sentiment vs next-day return scatter plot
 - correlation summary by ticker
 - top positive and negative posts for demo purposes
+
+## Dashboard logic
+
+```mermaid
+flowchart LR
+    A["analytics.daily_market_social"] --> D["Dashboard filters"]
+    B["analytics.ticker_overview"] --> D
+    C["analytics.top_social_posts"] --> D
+    D --> E["Price vs sentiment chart"]
+    D --> F["Timeline charts"]
+    D --> G["Return vs sentiment scatter"]
+    D --> H["Correlation summary"]
+    D --> I["Top positive and negative posts"]
+```
 
 ## Project structure
 

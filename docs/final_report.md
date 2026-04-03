@@ -109,6 +109,43 @@ flowchart LR
 
 The main design decision was to keep the stack lightweight and reproducible. DuckDB was chosen because it works well for local analytics, integrates cleanly with Python and Pandas, and does not require separate server management. Streamlit was chosen for the final application because it makes it easy to present the project interactively.
 
+### 5.1 End-to-end processing flow
+
+The full workflow can also be viewed as a sequence of engineering steps.
+
+```mermaid
+flowchart TD
+    A["Raw CSV and Excel files"] --> B["Python ingestion"]
+    B --> C["source_data raw tables"]
+    C --> D["prepared_data cleaned tables"]
+    D --> E["Sentiment scoring and ticker mapping"]
+    E --> F["analytics tables"]
+    F --> G["CSV exports"]
+    F --> H["Streamlit dashboard"]
+```
+
+### 5.2 Repository structure
+
+The project layout is intentionally simple so teammates can understand where each part belongs.
+
+```mermaid
+flowchart TD
+    A["Repository root"] --> B["config"]
+    A --> C["data/raw/source_files"]
+    A --> D["src/market_sentiment_pipeline"]
+    A --> E["sql"]
+    A --> F["dashboard"]
+    A --> G["docs"]
+    D --> D1["ingest.py"]
+    D --> D2["warehouse.py"]
+    D --> D3["pipeline.py"]
+    E --> E1["prepared_market_daily_prices.sql"]
+    E --> E2["analytics_daily_market_social.sql"]
+    E --> E3["analytics_daily_social_signals.sql"]
+    E --> E4["analytics_ticker_overview.sql"]
+    E --> E5["analytics_top_social_posts.sql"]
+```
+
 ## 6. Raw Storage Design
 
 The raw source files are stored directly inside the repository under:
@@ -133,6 +170,18 @@ The raw files are then loaded into the `source_data` schema in DuckDB:
 - `source_data.reddit_summary_raw`
 
 At this stage, the goal is not analysis. The goal is to keep the raw structure as intact as possible while attaching minimal metadata such as source file name, source ticker, or source month.
+
+### 6.1 Raw source organization
+
+```mermaid
+flowchart LR
+    A["data/raw/source_files/stocks"] --> A1["15-minute stock CSV"]
+    B["data/raw/source_files/stocktwits"] --> B1["8 ticker workbooks"]
+    C["data/raw/source_files/reddit"] --> C1["8 monthly Reddit workbooks"]
+    D["config/raw_sources.json"] --> A
+    D --> B
+    D --> C
+```
 
 ## 7. ETL Process
 
@@ -185,6 +234,21 @@ The final reporting layer is stored in the `analytics` schema:
 - `analytics.top_social_posts`
 - `analytics.dataset_inventory`
 
+### 7.5 ETL step diagram
+
+```mermaid
+flowchart TD
+    A["Read stock CSV"] --> D["Load source_data tables"]
+    B["Read StockTwits workbooks"] --> D
+    C["Read Reddit workbooks"] --> D
+    D --> E["Parse timestamps and types"]
+    E --> F["Clean text fields"]
+    F --> G["Score sentiment"]
+    G --> H["Infer tickers and normalize social mentions"]
+    H --> I["Aggregate daily market prices"]
+    I --> J["Build analytics tables"]
+```
+
 ### 7.4 Data quality rules
 
 The pipeline applies a few simple quality checks and assumptions:
@@ -214,6 +278,25 @@ The most important analytics table is `analytics.daily_market_social`, because i
 
 This table is what powers the dashboard and most of the analysis in the report.
 
+### 8.1 Schema relationship diagram
+
+```mermaid
+erDiagram
+    STOCK_PRICES_RAW ||--o{ STOCK_PRICES_15M : loads_into
+    STOCK_PRICES_15M ||--|| MARKET_DAILY_PRICES : aggregates_to
+    STOCKTWITS_POSTS_RAW ||--|| STOCKTWITS_POSTS : cleans_to
+    REDDIT_POSTS_RAW ||--|| REDDIT_POSTS : cleans_to
+    REDDIT_COMMENTS_RAW ||--|| REDDIT_COMMENTS : cleans_to
+    STOCKTWITS_POSTS ||--o{ SOCIAL_MENTIONS : contributes
+    REDDIT_POSTS ||--o{ SOCIAL_MENTIONS : contributes
+    REDDIT_COMMENTS ||--o{ SOCIAL_MENTIONS : optional_contribution
+    SOCIAL_MENTIONS ||--o{ DAILY_SOCIAL_SIGNALS : aggregates_to
+    MARKET_DAILY_PRICES ||--o{ DAILY_MARKET_SOCIAL : joins_to
+    DAILY_SOCIAL_SIGNALS ||--o{ DAILY_MARKET_SOCIAL : joins_to
+    DAILY_MARKET_SOCIAL ||--o{ TICKER_OVERVIEW : summarizes_to
+    SOCIAL_MENTIONS ||--o{ TOP_SOCIAL_POSTS : ranks_to
+```
+
 ## 9. Final Application
 
 The final user interface is a Streamlit dashboard built in [app.py](C:/Users/dings/OneDrive/Documents/New%20project/dashboard/app.py). The dashboard is designed for presentation use, not just development use.
@@ -229,6 +312,19 @@ It includes:
 - top positive and negative social content
 
 This makes the project easier to explain in a demo because it connects the warehouse outputs back to user-facing insights.
+
+### 9.1 Dashboard data flow
+
+```mermaid
+flowchart LR
+    A["analytics.daily_market_social"] --> D["Dashboard filters"]
+    B["analytics.ticker_overview"] --> D
+    C["analytics.top_social_posts"] --> D
+    D --> E["Main price vs sentiment view"]
+    D --> F["Timeline views"]
+    D --> G["Scatter and correlation views"]
+    D --> H["Top content tables"]
+```
 
 ## 10. Results
 
@@ -378,4 +474,3 @@ Inside the dashboard, the user can:
 - inspect top positive and negative posts from the underlying social data
 
 This final step connects the engineering pipeline back to the project’s main business questions.
-
