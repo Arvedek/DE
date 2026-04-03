@@ -13,6 +13,12 @@ SELECT 'prepared_data.market_daily_prices' AS table_name, COUNT(*) AS row_count 
 UNION ALL
 SELECT 'prepared_data.social_mentions' AS table_name, COUNT(*) AS row_count FROM prepared_data.social_mentions
 UNION ALL
+SELECT 'analytics.daily_social_signals' AS table_name, COUNT(*) AS row_count FROM analytics.daily_social_signals
+UNION ALL
 SELECT 'analytics.daily_market_social' AS table_name, COUNT(*) AS row_count FROM analytics.daily_market_social
 UNION ALL
-SELECT 'analytics.ticker_overview' AS table_name, COUNT(*) AS row_count FROM analytics.ticker_overview;
+SELECT 'analytics.daily_platform_mix' AS table_name, COUNT(*) AS row_count FROM analytics.daily_platform_mix
+UNION ALL
+SELECT 'analytics.ticker_overview' AS table_name, COUNT(*) AS row_count FROM analytics.ticker_overview
+UNION ALL
+SELECT 'analytics.pipeline_health' AS table_name, COUNT(*) AS row_count FROM analytics.pipeline_health;

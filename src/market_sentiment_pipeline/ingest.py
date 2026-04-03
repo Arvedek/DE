@@ -36,6 +36,13 @@ def _coerce_datetime_series(series: pd.Series) -> pd.Series:
     return pd.to_datetime(series, errors="coerce")
 
 
+def _drop_duplicates(frame: pd.DataFrame, subset: list[str]) -> pd.DataFrame:
+    available_subset = [column for column in subset if column in frame.columns]
+    if not available_subset:
+        return frame
+    return frame.drop_duplicates(subset=available_subset, keep="first").copy()
+
+
 def score_sentiment(text: str) -> float:
     cleaned = str(text or "").strip()
     if not cleaned:
@@ -88,9 +95,10 @@ def load_stock_prices_raw(source_config: SourceConfig) -> pd.DataFrame:
     frame = pd.read_csv(source_config.stocks_csv)
     frame.columns = _snake_case_columns(frame.columns)
     frame["source_file"] = source_config.stocks_csv.name
-    return frame[
+    frame = frame[
         ["timestamp", "ticker", "open", "high", "low", "close", "volume", "source_file"]
     ]
+    return _drop_duplicates(frame, ["timestamp", "ticker"])
 
 
 def iter_stocktwits_raw_frames(source_config: SourceConfig):
@@ -178,7 +186,7 @@ def iter_reddit_summary_raw_frames(source_config: SourceConfig):
 
 
 def transform_stocktwits_posts(raw_frame: pd.DataFrame) -> pd.DataFrame:
-    frame = raw_frame.copy()
+    frame = _drop_duplicates(raw_frame.copy(), ["post_id", "source_ticker"])
     frame["event_timestamp"] = _coerce_datetime_series(frame["raw_time"])
     frame["event_date"] = pd.to_datetime(frame["event_timestamp"]).dt.date
     frame["post_id"] = frame["post_id"].astype(str)
@@ -235,7 +243,7 @@ def build_stocktwits_mentions(clean_frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def transform_reddit_posts(raw_frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    frame = raw_frame.copy()
+    frame = _drop_duplicates(raw_frame.copy(), ["id"])
     frame["id"] = frame["id"].astype(str)
     frame["subreddit"] = _clean_text_series(frame["subreddit"])
     frame["author"] = _clean_text_series(frame["author"])
@@ -318,7 +326,7 @@ def transform_reddit_posts(raw_frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
 
 
 def transform_reddit_comments(raw_frame: pd.DataFrame) -> pd.DataFrame:
-    frame = raw_frame.copy()
+    frame = _drop_duplicates(raw_frame.copy(), ["comment_id"])
     frame["comment_id"] = frame["comment_id"].astype(str)
     frame["post_id"] = frame["post_id"].astype(str)
     frame["subreddit"] = _clean_text_series(frame["subreddit"])

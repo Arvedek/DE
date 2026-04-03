@@ -199,9 +199,11 @@ TABLE_DDL = [
 EXPORT_TABLES = (
     "analytics.daily_social_signals",
     "analytics.daily_market_social",
+    "analytics.daily_platform_mix",
     "analytics.ticker_overview",
     "analytics.top_social_posts",
     "analytics.dataset_inventory",
+    "analytics.pipeline_health",
 )
 
 
@@ -246,8 +248,10 @@ def _build_prepared_market_tables(connection: duckdb.DuckDBPyConnection) -> None
 def _build_analytics_tables(connection: duckdb.DuckDBPyConnection) -> None:
     connection.execute(_load_sql("analytics_daily_social_signals.sql"))
     connection.execute(_load_sql("analytics_daily_market_social.sql"))
+    connection.execute(_load_sql("analytics_daily_platform_mix.sql"))
     connection.execute(_load_sql("analytics_ticker_overview.sql"))
     connection.execute(_load_sql("analytics_top_social_posts.sql"))
+    connection.execute(_load_sql("analytics_pipeline_health.sql"))
     connection.execute(_load_sql("analytics_dataset_inventory.sql"))
 
 
