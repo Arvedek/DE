@@ -20,11 +20,11 @@ from market_sentiment_pipeline.ingest import (
 )
 
 TABLE_DDL = [
-    "CREATE SCHEMA IF NOT EXISTS bronze;",
-    "CREATE SCHEMA IF NOT EXISTS silver;",
-    "CREATE SCHEMA IF NOT EXISTS gold;",
+    "CREATE SCHEMA IF NOT EXISTS source_data;",
+    "CREATE SCHEMA IF NOT EXISTS prepared_data;",
+    "CREATE SCHEMA IF NOT EXISTS analytics;",
     """
-    CREATE OR REPLACE TABLE bronze.stock_prices_raw (
+    CREATE OR REPLACE TABLE source_data.stock_prices_raw (
         timestamp VARCHAR,
         ticker VARCHAR,
         open DOUBLE,
@@ -36,7 +36,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE bronze.stocktwits_posts_raw (
+    CREATE OR REPLACE TABLE source_data.stocktwits_posts_raw (
         post_id VARCHAR,
         user_name VARCHAR,
         raw_time VARCHAR,
@@ -46,7 +46,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE bronze.reddit_posts_raw (
+    CREATE OR REPLACE TABLE source_data.reddit_posts_raw (
         subreddit VARCHAR,
         id VARCHAR,
         title VARCHAR,
@@ -64,7 +64,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE bronze.reddit_comments_raw (
+    CREATE OR REPLACE TABLE source_data.reddit_comments_raw (
         subreddit VARCHAR,
         comment_id VARCHAR,
         post_id VARCHAR,
@@ -82,7 +82,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE bronze.reddit_summary_raw (
+    CREATE OR REPLACE TABLE source_data.reddit_summary_raw (
         subreddit VARCHAR,
         post_count DOUBLE,
         comment_count DOUBLE,
@@ -91,7 +91,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.stock_prices_15m (
+    CREATE OR REPLACE TABLE prepared_data.stock_prices_15m (
         event_timestamp TIMESTAMP,
         trade_date DATE,
         ticker VARCHAR,
@@ -104,7 +104,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.stock_prices_daily (
+    CREATE OR REPLACE TABLE prepared_data.market_daily_prices (
         trade_date DATE,
         ticker VARCHAR,
         open DOUBLE,
@@ -116,7 +116,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.stocktwits_posts (
+    CREATE OR REPLACE TABLE prepared_data.stocktwits_posts (
         platform VARCHAR,
         content_type VARCHAR,
         ticker VARCHAR,
@@ -132,7 +132,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.reddit_posts (
+    CREATE OR REPLACE TABLE prepared_data.reddit_posts (
         platform VARCHAR,
         content_type VARCHAR,
         id VARCHAR,
@@ -157,7 +157,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.reddit_comments (
+    CREATE OR REPLACE TABLE prepared_data.reddit_comments (
         platform VARCHAR,
         content_type VARCHAR,
         comment_id VARCHAR,
@@ -177,7 +177,7 @@ TABLE_DDL = [
     );
     """,
     """
-    CREATE OR REPLACE TABLE silver.social_mentions (
+    CREATE OR REPLACE TABLE prepared_data.social_mentions (
         platform VARCHAR,
         content_type VARCHAR,
         ticker VARCHAR,
@@ -197,11 +197,11 @@ TABLE_DDL = [
 ]
 
 EXPORT_TABLES = (
-    "gold.daily_social_signals",
-    "gold.daily_market_sentiment",
-    "gold.ticker_summary",
-    "gold.top_social_content",
-    "gold.data_inventory",
+    "analytics.daily_social_signals",
+    "analytics.daily_market_social",
+    "analytics.ticker_overview",
+    "analytics.top_social_posts",
+    "analytics.dataset_inventory",
 )
 
 
@@ -222,10 +222,10 @@ def _initialize_tables(connection: duckdb.DuckDBPyConnection) -> None:
         connection.execute(statement)
 
 
-def _build_silver_market_tables(connection: duckdb.DuckDBPyConnection) -> None:
+def _build_prepared_market_tables(connection: duckdb.DuckDBPyConnection) -> None:
     connection.execute(
         """
-        INSERT INTO silver.stock_prices_15m
+        INSERT INTO prepared_data.stock_prices_15m
         SELECT
             TRY_STRPTIME(timestamp, '%Y-%m-%d %H:%M:%S') AS event_timestamp,
             CAST(TRY_STRPTIME(timestamp, '%Y-%m-%d %H:%M:%S') AS DATE) AS trade_date,
@@ -236,19 +236,19 @@ def _build_silver_market_tables(connection: duckdb.DuckDBPyConnection) -> None:
             CAST(close AS DOUBLE) AS close,
             CAST(volume AS BIGINT) AS volume,
             source_file
-        FROM bronze.stock_prices_raw
+        FROM source_data.stock_prices_raw
         WHERE timestamp IS NOT NULL;
         """
     )
-    connection.execute(_load_sql("silver_stock_prices_daily.sql"))
+    connection.execute(_load_sql("prepared_market_daily_prices.sql"))
 
 
-def _build_gold_tables(connection: duckdb.DuckDBPyConnection) -> None:
-    connection.execute(_load_sql("gold_daily_social_signals.sql"))
-    connection.execute(_load_sql("gold_daily_market_sentiment.sql"))
-    connection.execute(_load_sql("gold_ticker_summary.sql"))
-    connection.execute(_load_sql("gold_top_social_content.sql"))
-    connection.execute(_load_sql("gold_data_inventory.sql"))
+def _build_analytics_tables(connection: duckdb.DuckDBPyConnection) -> None:
+    connection.execute(_load_sql("analytics_daily_social_signals.sql"))
+    connection.execute(_load_sql("analytics_daily_market_social.sql"))
+    connection.execute(_load_sql("analytics_ticker_overview.sql"))
+    connection.execute(_load_sql("analytics_top_social_posts.sql"))
+    connection.execute(_load_sql("analytics_dataset_inventory.sql"))
 
 
 def _export_outputs(connection: duckdb.DuckDBPyConnection) -> None:
@@ -271,32 +271,32 @@ def build_warehouse(
         _initialize_tables(connection)
 
         stock_prices_raw = load_stock_prices_raw(source_config)
-        _append_frame(connection, "bronze.stock_prices_raw", stock_prices_raw)
+        _append_frame(connection, "source_data.stock_prices_raw", stock_prices_raw)
 
         for raw_frame in iter_stocktwits_raw_frames(source_config):
-            _append_frame(connection, "bronze.stocktwits_posts_raw", raw_frame)
+            _append_frame(connection, "source_data.stocktwits_posts_raw", raw_frame)
             cleaned = transform_stocktwits_posts(raw_frame)
-            _append_frame(connection, "silver.stocktwits_posts", cleaned)
-            _append_frame(connection, "silver.social_mentions", build_stocktwits_mentions(cleaned))
+            _append_frame(connection, "prepared_data.stocktwits_posts", cleaned)
+            _append_frame(connection, "prepared_data.social_mentions", build_stocktwits_mentions(cleaned))
 
         for raw_frame in iter_reddit_posts_raw_frames(source_config):
-            _append_frame(connection, "bronze.reddit_posts_raw", raw_frame)
+            _append_frame(connection, "source_data.reddit_posts_raw", raw_frame)
             cleaned, mentions = transform_reddit_posts(raw_frame)
-            _append_frame(connection, "silver.reddit_posts", cleaned)
-            _append_frame(connection, "silver.social_mentions", mentions)
+            _append_frame(connection, "prepared_data.reddit_posts", cleaned)
+            _append_frame(connection, "prepared_data.social_mentions", mentions)
 
         for raw_frame in iter_reddit_comments_raw_frames(source_config):
-            _append_frame(connection, "bronze.reddit_comments_raw", raw_frame)
+            _append_frame(connection, "source_data.reddit_comments_raw", raw_frame)
             cleaned = transform_reddit_comments(raw_frame)
-            _append_frame(connection, "silver.reddit_comments", cleaned)
+            _append_frame(connection, "prepared_data.reddit_comments", cleaned)
             if include_reddit_comments:
-                _append_frame(connection, "silver.social_mentions", build_reddit_comment_mentions(cleaned))
+                _append_frame(connection, "prepared_data.social_mentions", build_reddit_comment_mentions(cleaned))
 
         for raw_frame in iter_reddit_summary_raw_frames(source_config):
-            _append_frame(connection, "bronze.reddit_summary_raw", raw_frame)
+            _append_frame(connection, "source_data.reddit_summary_raw", raw_frame)
 
-        _build_silver_market_tables(connection)
-        _build_gold_tables(connection)
+        _build_prepared_market_tables(connection)
+        _build_analytics_tables(connection)
         _export_outputs(connection)
     finally:
         connection.close()

@@ -1,6 +1,6 @@
 # MarketMood DE Project
 
-MarketMood is now configured around your collected raw data instead of sample APIs. The project treats your local stock price CSV, StockTwits workbooks, and Reddit monthly workbooks as the raw source layer, then builds a DuckDB bronze/silver/gold warehouse and a Streamlit app on top.
+MarketMood is now configured around your collected raw data instead of sample APIs. The project treats your local stock price CSV, StockTwits workbooks, and Reddit monthly workbooks as the raw source layer, then builds a DuckDB `source_data -> prepared_data -> analytics` warehouse and a Streamlit app on top.
 
 ## Project objective
 
@@ -25,30 +25,30 @@ Configured in [config/raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20
 - External CSV and XLSX files stay where you collected them
 - The project references them through a manifest file instead of copying everything into the repo
 
-### Bronze layer in DuckDB
+### `source_data` schema in DuckDB
 
-- `bronze.stock_prices_raw`
-- `bronze.stocktwits_posts_raw`
-- `bronze.reddit_posts_raw`
-- `bronze.reddit_comments_raw`
-- `bronze.reddit_summary_raw`
+- `source_data.stock_prices_raw`
+- `source_data.stocktwits_posts_raw`
+- `source_data.reddit_posts_raw`
+- `source_data.reddit_comments_raw`
+- `source_data.reddit_summary_raw`
 
-### Silver layer in DuckDB
+### `prepared_data` schema in DuckDB
 
-- `silver.stock_prices_15m`
-- `silver.stock_prices_daily`
-- `silver.stocktwits_posts`
-- `silver.reddit_posts`
-- `silver.reddit_comments`
-- `silver.social_mentions`
+- `prepared_data.stock_prices_15m`
+- `prepared_data.market_daily_prices`
+- `prepared_data.stocktwits_posts`
+- `prepared_data.reddit_posts`
+- `prepared_data.reddit_comments`
+- `prepared_data.social_mentions`
 
-### Gold layer in DuckDB
+### `analytics` schema in DuckDB
 
-- `gold.daily_social_signals`
-- `gold.daily_market_sentiment`
-- `gold.ticker_summary`
-- `gold.top_social_content`
-- `gold.data_inventory`
+- `analytics.daily_social_signals`
+- `analytics.daily_market_social`
+- `analytics.ticker_overview`
+- `analytics.top_social_posts`
+- `analytics.dataset_inventory`
 
 ## What the final app shows
 
@@ -83,12 +83,12 @@ This is a strong course-project scale because it justifies layered storage, incr
 |   |-- project_design.md
 |   `-- raw_storage_design.md
 |-- sql/
-|   |-- gold_daily_market_sentiment.sql
-|   |-- gold_daily_social_signals.sql
-|   |-- gold_data_inventory.sql
-|   |-- gold_ticker_summary.sql
-|   |-- gold_top_social_content.sql
-|   `-- silver_stock_prices_daily.sql
+|   |-- analytics_daily_market_social.sql
+|   |-- analytics_daily_social_signals.sql
+|   |-- analytics_dataset_inventory.sql
+|   |-- analytics_ticker_overview.sql
+|   |-- analytics_top_social_posts.sql
+|   `-- prepared_market_daily_prices.sql
 |-- src/
 |   `-- market_sentiment_pipeline/
 |       |-- __init__.py
@@ -145,11 +145,10 @@ streamlit run dashboard/app.py
 
 - External raw files stay untouched so the collected data remains your system of record
 - DuckDB acts as the analytical warehouse and refined storage
-- Bronze tables preserve source-specific structure
-- Silver tables standardize schema and derive timestamps, tickers, and sentiment
-- Gold tables power the dashboard and final report
+- `source_data` tables preserve source-specific structure
+- `prepared_data` tables standardize schema and derive timestamps, tickers, and sentiment
+- `analytics` tables power the dashboard and final report
 
 ## Suggested report structure
 
 Use [docs/project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md) for the report body and [docs/raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md) for the architecture and storage section.
-

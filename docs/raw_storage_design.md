@@ -34,9 +34,9 @@ This gives two benefits:
 - comments columns: `subreddit`, `comment_id`, `post_id`, `author`, `body`, `score`, `depth`, `parent_id`, `created_utc`, `is_submitter`, `awards`, `matched_keywords`
 - summary columns: subreddit-level counts
 
-## 3. Bronze design
+## 3. `source_data` design
 
-Bronze tables preserve source structure with only light metadata:
+`source_data` tables preserve source structure with only light metadata:
 
 - source file name
 - source month for Reddit
@@ -44,9 +44,9 @@ Bronze tables preserve source structure with only light metadata:
 
 No sentiment logic or business aggregation happens here.
 
-## 4. Silver design
+## 4. `prepared_data` design
 
-Silver is the refined storage layer.
+`prepared_data` is the refined storage layer.
 
 ### Market refinements
 
@@ -62,11 +62,11 @@ Silver is the refined storage layer.
 - infer tracked tickers from file context or matched keywords
 - build one normalized `social_mentions` table
 
-## 5. Gold design
+## 5. `analytics` design
 
-Gold tables are built for analytics and the final application.
+`analytics` tables are built for analytics and the final application.
 
-### `gold.daily_social_signals`
+### `analytics.daily_social_signals`
 
 Daily social features by ticker:
 
@@ -76,7 +76,7 @@ Daily social features by ticker:
 - positive and negative counts
 - distinct author counts
 
-### `gold.daily_market_sentiment`
+### `analytics.daily_market_social`
 
 Joined daily market and social features:
 
@@ -85,11 +85,11 @@ Joined daily market and social features:
 - next-day return
 - daily social features
 
-### `gold.ticker_summary`
+### `analytics.ticker_overview`
 
 Ticker-level KPIs and correlations.
 
-### `gold.top_social_content`
+### `analytics.top_social_posts`
 
 Most bullish and bearish content per ticker for the app demo.
 
@@ -97,6 +97,5 @@ Most bullish and bearish content per ticker for the app demo.
 
 - raw collection is already done
 - the project still demonstrates ingestion, transformation, warehousing, and serving
-- bronze/silver/gold is easy to explain during presentation
+- source_data/prepared_data/analytics is easy to explain during presentation
 - the final dashboard consumes curated data instead of raw spreadsheets
-

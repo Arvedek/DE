@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE gold.daily_social_signals AS
+CREATE OR REPLACE TABLE analytics.daily_social_signals AS
 SELECT
     ticker,
     event_date AS trade_date,
@@ -10,7 +10,6 @@ SELECT
     ROUND(AVG(sentiment_score), 6) AS avg_sentiment,
     SUM(CASE WHEN sentiment_label = 'positive' THEN 1 ELSE 0 END) AS positive_mentions,
     SUM(CASE WHEN sentiment_label = 'negative' THEN 1 ELSE 0 END) AS negative_mentions
-FROM silver.social_mentions
+FROM prepared_data.social_mentions
 GROUP BY 1, 2
 ORDER BY ticker, trade_date;
-

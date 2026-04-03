@@ -20,7 +20,7 @@
 ## Slide 4. Architecture
 
 - external raw files
-- DuckDB bronze, silver, gold
+- DuckDB source_data, prepared_data, analytics
 - Streamlit app
 
 ## Slide 5. ETL logic
@@ -48,5 +48,4 @@
 
 - better NLP model
 - scheduled refresh
-- predictive modeling on the gold layer
-
+- predictive modeling on the analytics layer

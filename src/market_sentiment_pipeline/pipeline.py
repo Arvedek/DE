@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--include-reddit-comments",
         action="store_true",
-        help="Include Reddit comments in the unified social mention gold layer.",
+        help="Include Reddit comments in the unified social mention analytics layer.",
     )
     return parser.parse_args()
 

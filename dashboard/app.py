@@ -12,7 +12,7 @@ DATABASE_PATH = ROOT_DIR / "warehouse" / "market_sentiment.duckdb"
 
 st.set_page_config(page_title="MarketMood Dashboard", layout="wide")
 st.title("MarketMood Dashboard")
-st.caption("Stock prices, Reddit, and StockTwits on a DuckDB bronze/silver/gold warehouse")
+st.caption("Stock prices, Reddit, and StockTwits on a source/prepared/analytics warehouse")
 
 if not DATABASE_PATH.exists():
     st.info("Run `python run_pipeline.py` first to build the warehouse.")
@@ -20,16 +20,16 @@ if not DATABASE_PATH.exists():
 
 connection = duckdb.connect(str(DATABASE_PATH), read_only=True)
 daily_market = connection.execute(
-    "SELECT * FROM gold.daily_market_sentiment ORDER BY trade_date, ticker"
+    "SELECT * FROM analytics.daily_market_social ORDER BY trade_date, ticker"
 ).fetchdf()
 ticker_summary = connection.execute(
-    "SELECT * FROM gold.ticker_summary ORDER BY ticker"
+    "SELECT * FROM analytics.ticker_overview ORDER BY ticker"
 ).fetchdf()
 top_content = connection.execute(
-    "SELECT * FROM gold.top_social_content ORDER BY ticker, sentiment_label, rank_in_label"
+    "SELECT * FROM analytics.top_social_posts ORDER BY ticker, sentiment_label, rank_in_label"
 ).fetchdf()
 inventory = connection.execute(
-    "SELECT * FROM gold.data_inventory ORDER BY table_name"
+    "SELECT * FROM analytics.dataset_inventory ORDER BY table_name"
 ).fetchdf()
 connection.close()
 

@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE silver.stock_prices_daily AS
+CREATE OR REPLACE TABLE prepared_data.market_daily_prices AS
 SELECT
     trade_date,
     ticker,
@@ -8,8 +8,7 @@ SELECT
     ARG_MAX(close, event_timestamp) AS close,
     CAST(SUM(volume) AS BIGINT) AS volume,
     COUNT(*) AS bars_15m
-FROM silver.stock_prices_15m
+FROM prepared_data.stock_prices_15m
 WHERE event_timestamp IS NOT NULL
 GROUP BY 1, 2
 ORDER BY ticker, trade_date;
-

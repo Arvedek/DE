@@ -313,8 +313,8 @@ def transform_reddit_posts(raw_frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
         ]
     ].copy()
 
-    silver_frame = cleaned.drop(columns=["matched_ticker_list"])
-    return silver_frame, mentions
+    prepared_frame = cleaned.drop(columns=["matched_ticker_list"])
+    return prepared_frame, mentions
 
 
 def transform_reddit_comments(raw_frame: pd.DataFrame) -> pd.DataFrame:

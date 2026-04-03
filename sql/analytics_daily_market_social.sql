@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE gold.daily_market_sentiment AS
+CREATE OR REPLACE TABLE analytics.daily_market_social AS
 WITH market_features AS (
     SELECT
         ticker,
@@ -17,7 +17,7 @@ WITH market_features AS (
             (LEAD(close) OVER (PARTITION BY ticker ORDER BY trade_date) / NULLIF(close, 0)) - 1,
             6
         ) AS next_day_return
-    FROM silver.stock_prices_daily
+    FROM prepared_data.market_daily_prices
 )
 SELECT
     market_features.ticker,
@@ -39,8 +39,7 @@ SELECT
     COALESCE(daily_social_signals.positive_mentions, 0) AS positive_mentions,
     COALESCE(daily_social_signals.negative_mentions, 0) AS negative_mentions
 FROM market_features
-LEFT JOIN gold.daily_social_signals AS daily_social_signals
+LEFT JOIN analytics.daily_social_signals AS daily_social_signals
     ON market_features.ticker = daily_social_signals.ticker
    AND market_features.trade_date = daily_social_signals.trade_date
 ORDER BY market_features.ticker, market_features.trade_date;
-

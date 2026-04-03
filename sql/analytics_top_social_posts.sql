@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE gold.top_social_content AS
+CREATE OR REPLACE TABLE analytics.top_social_posts AS
 WITH ranked_content AS (
     SELECT
         ticker,
@@ -14,7 +14,7 @@ WITH ranked_content AS (
             PARTITION BY ticker, sentiment_label
             ORDER BY ABS(sentiment_score) DESC, engagement_score DESC, event_date DESC
         ) AS rank_in_label
-    FROM silver.social_mentions
+    FROM prepared_data.social_mentions
     WHERE sentiment_label IN ('positive', 'negative')
       AND text_content IS NOT NULL
       AND LENGTH(TRIM(text_content)) > 0
@@ -33,4 +33,3 @@ SELECT
 FROM ranked_content
 WHERE rank_in_label <= 25
 ORDER BY ticker, sentiment_label, rank_in_label;
-
