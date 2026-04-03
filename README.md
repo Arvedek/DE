@@ -49,6 +49,7 @@ Observed scale:
 - [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md): step-by-step setup for teammates
 - [project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md): report-style explanation of the project
 - [raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md): explanation of raw storage and refined storage
+- [final_report.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/final_report.md): paper-style final report for submission
 
 ## How to run it
 
@@ -86,6 +87,7 @@ The final UI focuses on stock price versus sentiment. It includes:
 |-- dashboard/
 |   `-- app.py
 |-- docs/
+|   |-- final_report.md
 |   |-- presentation_outline.md
 |   |-- project_design.md
 |   |-- raw_storage_design.md
@@ -128,4 +130,3 @@ If you are working on the written report, start with:
 
 - [project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md)
 - [raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md)
-
