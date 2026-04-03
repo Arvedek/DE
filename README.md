@@ -1,76 +1,83 @@
-# MarketMood DE Project
+# MarketMood
 
-MarketMood is now configured around your collected raw data instead of sample APIs. The repository now includes the stock price CSV, StockTwits workbooks, and Reddit monthly workbooks under `data/raw/source_files/`, then builds a DuckDB `source_data -> prepared_data -> analytics` warehouse and a Streamlit app on top.
+MarketMood is our data engineering project on stock price movement and social sentiment.
 
-## Project objective
+The idea is simple: we wanted one place where we could look at market data and social discussion together instead of treating them as two separate things. The project takes stock prices, Reddit posts, and StockTwits posts, cleans them up, stores them in DuckDB, and turns them into a dashboard that compares price movement with sentiment.
 
-Build a reproducible data engineering pipeline that answers:
+## What is in this repo
 
-1. How does daily social sentiment compare with stock movement for selected tickers?
-2. Which tickers attract the most Reddit and StockTwits attention?
-3. Does daily sentiment show any relationship with same-day or next-day return?
+This repository already includes the raw source files, so teammates do not need to hunt them down separately.
 
-## Raw sources used
+Raw files live here:
 
-Configured in [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json):
+- `data/raw/source_files/stocks/`
+- `data/raw/source_files/stocktwits/`
+- `data/raw/source_files/reddit/`
 
-- 15-minute stock bars CSV in `data/raw/source_files/stocks/`
-- 8 StockTwits ticker workbooks in `data/raw/source_files/stocktwits/`
-- 8 monthly Reddit workbooks with `Posts`, `Comments`, and `Summary` sheets in `data/raw/source_files/reddit/`
+The project then builds three layers in DuckDB:
 
-## Data model
+- `source_data` for the raw loaded tables
+- `prepared_data` for cleaned and transformed tables
+- `analytics` for the final dashboard and reporting tables
 
-### Raw source layer
+## What the project tries to answer
 
-- External CSV and XLSX files stay where you collected them
-- The project references them through a manifest file instead of copying everything into the repo
+- Do social discussions line up with stock price movement?
+- Which stocks get the most attention on Reddit and StockTwits?
+- Does positive or negative sentiment seem to relate to same-day or next-day returns?
 
-### `source_data` schema in DuckDB
+## Data included
 
-- `source_data.stock_prices_raw`
-- `source_data.stocktwits_posts_raw`
-- `source_data.reddit_posts_raw`
-- `source_data.reddit_comments_raw`
-- `source_data.reddit_summary_raw`
+The repo currently includes:
 
-### `prepared_data` schema in DuckDB
+- 15-minute stock bars for 8 tickers
+- 8 StockTwits workbooks
+- 8 monthly Reddit workbooks
 
-- `prepared_data.stock_prices_15m`
-- `prepared_data.market_daily_prices`
-- `prepared_data.stocktwits_posts`
-- `prepared_data.reddit_posts`
-- `prepared_data.reddit_comments`
-- `prepared_data.social_mentions`
+Observed scale:
 
-### `analytics` schema in DuckDB
-
-- `analytics.daily_social_signals`
-- `analytics.daily_market_social`
-- `analytics.ticker_overview`
-- `analytics.top_social_posts`
-- `analytics.dataset_inventory`
-
-## What the final app shows
-
-- price trend by ticker
-- daily social volume
-- average sentiment over time
-- sentiment vs next-day return
-- top bullish and bearish Reddit or StockTwits content
-- source inventory counts for the report/demo
-
-## Current source inventory
-
-From the raw files you provided:
-
-- stock 15-minute bars: `151,852`
+- stock rows: `151,852`
 - StockTwits posts: `1,310,301`
 - Reddit posts: `14,658`
 - Reddit comments: `518,592`
 
-This is a strong course-project scale because it justifies layered storage, incremental ETL, and a curated serving model.
+## Main files
 
-## Repository layout
+- [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json): tells the pipeline where to find the raw files
+- [run_pipeline.py](C:/Users/dings/OneDrive/Documents/New%20project/run_pipeline.py): runs the ETL
+- [app.py](C:/Users/dings/OneDrive/Documents/New%20project/dashboard/app.py): Streamlit dashboard
+- [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md): step-by-step setup for teammates
+- [project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md): report-style explanation of the project
+- [raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md): explanation of raw storage and refined storage
+
+## How to run it
+
+The short version is:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python run_pipeline.py
+streamlit run dashboard/app.py
+```
+
+If you want the full teammate-friendly version, use:
+
+- [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md)
+
+## What the dashboard shows
+
+The final UI focuses on stock price versus sentiment. It includes:
+
+- price trend by ticker
+- sentiment trend over time
+- a combined price-vs-sentiment view for one selected ticker
+- sentiment vs next-day return scatter plot
+- correlation summary by ticker
+- top positive and negative posts for demo purposes
+
+## Project structure
 
 ```text
 .
@@ -98,7 +105,6 @@ This is a strong course-project scale because it justifies layered storage, incr
 |   `-- prepared_market_daily_prices.sql
 |-- src/
 |   `-- market_sentiment_pipeline/
-|       |-- __init__.py
 |       |-- config.py
 |       |-- ingest.py
 |       |-- pipeline.py
@@ -109,55 +115,17 @@ This is a strong course-project scale because it justifies layered storage, incr
 `-- run_pipeline.py
 ```
 
-## Setup
+## Why we designed it this way
 
-For a teammate-friendly step-by-step run guide, use [team_run_guide.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/team_run_guide.md).
+- The repo includes the real data, so the project is easier to reproduce.
+- DuckDB keeps the setup lightweight for a class project.
+- The layer split makes it easier to explain the flow during presentation.
+- The dashboard reads from curated analytics tables instead of messy raw files.
 
-### 1. Create a virtual environment
+## For the report
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
+If you are working on the written report, start with:
 
-### 2. Check the raw source manifest
+- [project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md)
+- [raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md)
 
-Open [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json) and confirm the relative paths still point to the in-repo raw files.
-
-### 3. Run the pipeline
-
-Default run:
-
-```powershell
-python run_pipeline.py
-```
-
-If you want Reddit comments included in the final social signal table:
-
-```powershell
-python run_pipeline.py --include-reddit-comments
-```
-
-Outputs:
-
-- DuckDB warehouse: `warehouse/market_sentiment.duckdb`
-- report/demo exports: `data/exports/*.csv`
-
-### 4. Launch the dashboard
-
-```powershell
-streamlit run dashboard/app.py
-```
-
-## Design choices
-
-- Raw source files are versioned inside the repository under `data/raw/source_files/`
-- DuckDB acts as the analytical warehouse and refined storage
-- `source_data` tables preserve source-specific structure
-- `prepared_data` tables standardize schema and derive timestamps, tickers, and sentiment
-- `analytics` tables power the dashboard and final report
-
-## Suggested report structure
-
-Use [docs/project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md) for the report body and [docs/raw_storage_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/raw_storage_design.md) for the architecture and storage section.

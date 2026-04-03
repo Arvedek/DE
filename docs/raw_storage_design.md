@@ -1,15 +1,15 @@
-# Raw Storage And Refined Storage Design
+# Raw Storage and Refined Storage Design
 
 ## 1. Raw storage strategy
 
-The project treats the collected CSV/XLSX files as the source-of-truth raw layer. Instead of moving them into the repo, we store their locations in a manifest file:
+The project treats the collected CSV and Excel files as the source-of-truth raw layer. They are stored inside the repository and referenced through a manifest file:
 
 - [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json)
 
-This gives two benefits:
+This helps in two ways:
 
-1. Large raw files stay in their existing folder structure.
-2. The ETL remains reproducible because the paths are explicitly documented.
+1. Everyone on the team works from the same files.
+2. The ETL stays reproducible because the paths are explicitly documented.
 
 ## 2. Source inventory
 
@@ -36,17 +36,17 @@ This gives two benefits:
 
 ## 3. `source_data` design
 
-`source_data` tables preserve source structure with only light metadata:
+`source_data` tables keep the original source structure with only light metadata:
 
 - source file name
 - source month for Reddit
 - source ticker for StockTwits
 
-No sentiment logic or business aggregation happens here.
+No sentiment logic or business aggregation happens at this stage.
 
 ## 4. `prepared_data` design
 
-`prepared_data` is the refined storage layer.
+`prepared_data` is the cleaned and refined layer.
 
 ### Market refinements
 
@@ -64,7 +64,7 @@ No sentiment logic or business aggregation happens here.
 
 ## 5. `analytics` design
 
-`analytics` tables are built for analytics and the final application.
+`analytics` tables are the ones we actually use for analysis, reporting, and the final dashboard.
 
 ### `analytics.daily_social_signals`
 
@@ -95,7 +95,7 @@ Most bullish and bearish content per ticker for the app demo.
 
 ## 6. Why this design works for the course
 
-- raw collection is already done
-- the project still demonstrates ingestion, transformation, warehousing, and serving
-- source_data/prepared_data/analytics is easy to explain during presentation
-- the final dashboard consumes curated data instead of raw spreadsheets
+- the raw collection work is already done
+- the project still clearly demonstrates ingestion, transformation, warehousing, and serving
+- the `source_data -> prepared_data -> analytics` flow is easy to explain during presentation
+- the final dashboard reads curated tables instead of messy spreadsheets

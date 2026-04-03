@@ -1,28 +1,28 @@
 # Team Run Guide
 
-This guide is for teammates who want to run the MarketMood project on their own Windows laptop from scratch.
+This is the practical setup guide for anyone on the team who wants to run the project on their own laptop.
 
-Use this file as the practical setup guide. Use [project_design.md](C:/Users/dings/OneDrive/Documents/New%20project/docs/project_design.md) for the report and architecture explanation.
+The good news is that the raw data is already inside the repository, so you do not need to collect the files again. You just need Python, the project dependencies, and a few commands.
 
-## What this project needs
+## Before you start
 
-Each teammate needs:
+You need:
 
 - a local copy of the repository
 - Python 3.13 or newer
-- the raw data files included in this repository
+- PowerShell on Windows
 
-## Project folder
+## 1. Open the project folder
 
-Clone or download the repository, then open PowerShell in the project folder.
+Clone the repo or download it, then open PowerShell in the project folder.
 
 Example:
 
 ```powershell
-cd "C:\Users\YOUR_NAME\Documents\New project"
+cd "C:\Users\YOUR_NAME\Documents\DE"
 ```
 
-## Step 1. Check Python
+## 2. Check Python
 
 Run:
 
@@ -36,17 +36,9 @@ If that does not work, try:
 py --version
 ```
 
-If both fail:
+If both fail, install Python from [python.org/downloads/windows](https://www.python.org/downloads/windows/) and make sure `Add python.exe to PATH` is checked during installation.
 
-1. Install Python from [python.org/downloads/windows](https://www.python.org/downloads/windows/)
-2. During installation, tick `Add python.exe to PATH`
-3. Reopen PowerShell and test again
-
-Recommended version:
-
-- Python 3.13 or Python 3.14
-
-## Step 2. Create a virtual environment
+## 3. Create a virtual environment
 
 If `python` works:
 
@@ -60,84 +52,57 @@ If only `py` works:
 py -m venv .venv
 ```
 
-## Step 3. Activate the virtual environment
+## 4. Activate it
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-You should now see `(.venv)` at the beginning of the PowerShell line.
+You should see `(.venv)` at the beginning of the PowerShell line.
 
-## Step 4. Install packages
+## 5. Install the dependencies
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-## Step 5. Point the project to the raw data
+## 6. Check the raw data config
 
 Open:
 
-[raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json)
+- [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json)
 
-The default config already points to the raw files committed into this repository.
+By default, it already points to the raw files inside this repo. In most cases, teammates will not need to change anything.
 
-The file should point to:
+It should point to:
 
-- the stock CSV in `data/raw/source_files/stocks/`
-- the folder containing `*_posts.xlsx` StockTwits files in `data/raw/source_files/stocktwits/`
-- the folder containing `reddit_*.xlsx` Reddit workbooks in `data/raw/source_files/reddit/`
+- `data/raw/source_files/stocks/`
+- `data/raw/source_files/stocktwits/`
+- `data/raw/source_files/reddit/`
 
-Example structure:
+## 7. Run the ETL pipeline
 
-```json
-{
-  "stocks_csv": "C:\\path\\to\\stocks_250101-260319_15m_RAW.csv",
-  "stocktwits_dir": "C:\\path\\to\\stocktwistposts",
-  "stocktwits_pattern": "*_posts.xlsx",
-  "reddit_dir": "C:\\path\\to\\reddit_output2",
-  "reddit_pattern": "reddit_*.xlsx"
-}
-```
-
-## Step 6. Run the ETL pipeline
-
-Default run:
+Standard run:
 
 ```powershell
 python run_pipeline.py
 ```
 
-or:
+Or:
 
 ```powershell
 py run_pipeline.py
 ```
 
-If you also want Reddit comments included in the unified social signal table:
+If you want Reddit comments included in the unified social signal layer too:
 
 ```powershell
 python run_pipeline.py --include-reddit-comments
 ```
 
-This step reads the raw CSV and Excel files, then builds:
+This step builds the DuckDB warehouse and creates the final analytics tables used by the dashboard.
 
-- `source_data.*` raw warehouse tables
-- `prepared_data.*` cleaned tables
-- `analytics.*` final dashboard tables
-
-## Step 7. Check the outputs
-
-After the pipeline finishes, these should exist:
-
-- [market_sentiment.duckdb](C:/Users/dings/OneDrive/Documents/New%20project/warehouse/market_sentiment.duckdb)
-- `data/exports/daily_market_social.csv`
-- `data/exports/daily_social_signals.csv`
-- `data/exports/ticker_overview.csv`
-- `data/exports/top_social_posts.csv`
-- `data/exports/dataset_inventory.csv`
-
-## Step 8. Start the dashboard
+## 8. Start the dashboard
 
 ```powershell
 streamlit run dashboard/app.py
@@ -147,38 +112,34 @@ Then open:
 
 - [http://localhost:8501](http://localhost:8501)
 
-## What the UI shows
+## 9. What you should see
 
-The dashboard includes:
+The app should show:
 
-- stock price trend
-- sentiment trend
-- price vs sentiment comparison for a selected ticker
-- sentiment vs next-day return scatter plot
-- ticker correlation summary
-- top positive and negative social posts
+- a main price vs sentiment comparison view
+- stock price and sentiment trends
+- a sentiment vs next-day return scatter plot
+- ticker-level correlation summaries
+- top positive and negative Reddit or StockTwits posts
 
-## Recommended demo flow
+## 10. Files created after the ETL
 
-For presentation day:
+After the pipeline finishes, these are the main outputs:
 
-1. Run the ETL first
-2. Start the Streamlit app
-3. Select 3 to 4 tickers
-4. Choose one focus ticker
-5. Show the main price-vs-sentiment chart
-6. Show the comparison tab
-7. End with the top positive and negative content tab
+- `warehouse/market_sentiment.duckdb`
+- `data/exports/daily_market_social.csv`
+- `data/exports/daily_social_signals.csv`
+- `data/exports/ticker_overview.csv`
+- `data/exports/top_social_posts.csv`
+- `data/exports/dataset_inventory.csv`
 
-## Troubleshooting
+## Common issues
 
-### `python` is not recognized
+### Python is not recognized
 
-- install Python from python.org
-- reopen PowerShell
-- test `python --version`
+Install Python from python.org, reopen PowerShell, and test `python --version` again.
 
-### PowerShell blocks virtual environment activation
+### PowerShell blocks the virtual environment
 
 Run:
 
@@ -192,25 +153,28 @@ Then activate again:
 .venv\Scripts\Activate.ps1
 ```
 
-### Raw files cannot be found
+### The dashboard opens but there is no data
 
-- check the paths in [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json)
-- make sure the file names and folders are correct
-- make sure the raw files are downloaded locally, not only visible in cloud placeholders
-
-### Streamlit opens but shows no data
-
-- rerun the ETL step
-- confirm `warehouse/market_sentiment.duckdb` exists
-- confirm the pipeline finished successfully
-
-## One-command reminder
-
-After initial setup, the normal repeat workflow is:
+Run the ETL first:
 
 ```powershell
-cd "C:\Users\YOUR_NAME\Documents\New project"
+python run_pipeline.py
+```
+
+Then make sure `warehouse/market_sentiment.duckdb` exists.
+
+### The raw files cannot be found
+
+Open [raw_sources.json](C:/Users/dings/OneDrive/Documents/New%20project/config/raw_sources.json) and confirm the paths still point to the repo folders.
+
+## Short version
+
+Once everything is set up, this is the normal workflow:
+
+```powershell
+cd "C:\Users\YOUR_NAME\Documents\DE"
 .venv\Scripts\Activate.ps1
 python run_pipeline.py
 streamlit run dashboard/app.py
 ```
+

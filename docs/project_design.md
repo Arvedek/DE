@@ -2,11 +2,11 @@
 
 ## 1. Problem statement
 
-Price charts alone do not explain why a stock moved. At the same time, raw Reddit and StockTwits posts are noisy and difficult to connect to structured market data. This project solves that gap by building a repeatable data platform that ingests stock prices together with social discussion, standardizes them in a warehouse, derives sentiment features, and serves a curated analytics layer for dashboarding and reporting.
+Looking at stock charts alone only tells part of the story. Looking at Reddit or StockTwits alone does the same. What we wanted was a way to put those two views together: market movement on one side, social mood on the other. This project does that by collecting the raw data, cleaning it, storing it in a simple warehouse, and building a final dashboard that makes the comparison easier to explore.
 
 ## 2. Use case
 
-The project supports a quantitative-finance style workflow where we want to compare price action with crowd attention and sentiment. The questions are:
+The project is meant to support a simple quantitative-finance workflow where we compare price action with crowd attention and sentiment. The main questions are:
 
 1. Which tickers receive the highest amount of social discussion?
 2. How does average daily sentiment compare with same-day return?
@@ -37,10 +37,10 @@ The project supports a quantitative-finance style workflow where we want to comp
 
 ## 4. Why this dataset is practical
 
-- It is already collected, so the project can focus on engineering and analytics instead of scraping
-- It combines structured market data with unstructured social text
-- The scale is large enough to justify layered storage and ETL
-- The schema is consistent enough to build a repeatable pipeline
+- The data was already collected, so we could spend our time on engineering and analysis instead of scraping.
+- It combines structured market data with unstructured social text, which makes the integration part meaningful.
+- The dataset is large enough to justify layered storage and ETL.
+- The structure is consistent enough to build a repeatable pipeline.
 
 ## 5. Architecture
 
@@ -60,15 +60,15 @@ flowchart LR
 
 ### Raw source layer
 
-External files remain in their current folders and are referenced through a manifest file. This avoids duplicating large workbooks in the repo while still making the pipeline reproducible.
+The raw files are stored inside the repository so teammates can run the project without having to copy files around manually.
 
 ### `source_data`
 
 Purpose:
 
-- preserve source-level structure
-- add only minimal metadata such as source file or source month
-- support debugging and replay
+- keep the source-level structure as intact as possible
+- add only light metadata such as source file or source month
+- make debugging and re-running the pipeline easier
 
 Tables:
 
@@ -82,11 +82,11 @@ Tables:
 
 Purpose:
 
-- standardize column names and data types
-- parse timestamps
-- derive daily stock bars from 15-minute data
-- compute text sentiment
-- normalize content into a shared social-mention model
+- standardize names and data types
+- parse timestamps properly
+- roll 15-minute stock bars into daily data
+- compute sentiment scores from text
+- normalize the social data into one common model
 
 Tables:
 
@@ -101,8 +101,8 @@ Tables:
 
 Purpose:
 
-- prepare dashboard-friendly aggregated tables
-- support findings and correlation analysis
+- prepare dashboard-friendly tables
+- support findings, comparisons, and correlation analysis
 
 Tables:
 
@@ -121,7 +121,7 @@ Tables:
 5. Aggregate 15-minute bars into daily stock bars
 6. Score text sentiment with VADER
 7. Map Reddit keywords and text to tracked tickers
-8. Build a unified social-mentions table
+8. Build one unified social-mentions table
 9. Aggregate daily social features and join them with daily market data
 
 ## 8. Core analytical features
@@ -147,7 +147,7 @@ Tables:
 
 ## 10. Final application
 
-The Streamlit application will allow the team to:
+The Streamlit dashboard lets the team:
 
 - filter by ticker and date
 - compare price trend against social activity
@@ -157,9 +157,9 @@ The Streamlit application will allow the team to:
 
 ## 11. Expected findings
 
-- highly discussed tickers such as NVDA and AAPL will likely dominate the social volume
-- sentiment will probably be noisy and only weakly correlated with returns
-- social activity volume may be more informative around major events than raw average sentiment alone
+- highly discussed tickers such as NVDA and AAPL will probably dominate the social volume
+- sentiment will likely be noisy and only weakly correlated with returns
+- social activity volume may be more useful around major events than average sentiment alone
 
 ## 12. Future work
 
